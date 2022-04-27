@@ -1,4 +1,4 @@
-import { FC, useCallback, useMemo, useRef, useState } from "react";
+import { FC, useCallback, useLayoutEffect, useMemo, useRef, useState } from "react";
 import styles from './AppContainer.module.scss'
 import AppIcon from './AppIcon';
 import GridCell from './GridCell';
@@ -6,8 +6,7 @@ import * as Icons from "react-icons/fc";
 import _ from 'lodash';
 import AppView from './AppView';
 import { useDrag } from '@use-gesture/react'
-import { HTML5Backend } from 'react-dnd-html5-backend'
-import { DndProvider } from 'react-dnd'
+
 
 const IconsList = Object.values(Icons).slice(0, 66);
 
@@ -17,7 +16,15 @@ const AppContainer: FC = () => {
         return _.chunk(dataSource, 30)
     }, [dataSource])
     const mainRef = useRef<HTMLDivElement>(null)
-    const width = mainRef.current?.clientWidth || 0
+
+    const [layoutWidth, setLayoutWidth] = useState(0)
+
+    useLayoutEffect(() => {
+        if (mainRef.current) {
+            setLayoutWidth(mainRef.current.clientWidth)
+        }
+    }, [])
+    const width = mainRef.current?.clientWidth || layoutWidth
     const [currentIndex, setIndex] = useState(0)
     const [isEdit, setEdit] = useState(false)
     const longPressBind = useLongPress(() => {
@@ -36,12 +43,32 @@ const AppContainer: FC = () => {
         setDataSource(dataSource.filter(item => item.name !== name))
     }, [dataSource])
 
-    return <DndProvider backend={HTML5Backend}><main className={styles.main} ref={mainRef} {...bind()}>
+    const handleDrop = (from: string, to: string) => {
+        if (!isEdit) return;
+        const map = new Map()
+        for (const item of dataSource) {
+            map.set(item.name, item)
+        }
+        const nextList = dataSource.map(item => {
+            if (item.name === from) {
+                return map.get(to)
+            }
+            if (item.name === to) {
+                return map.get(from)
+            }
+
+            return item
+        })
+
+        setDataSource(nextList)
+    }
+
+    return <main className={styles.main} ref={mainRef} {...bind()}>
         {AppIconList.map((icons, index) => {
             return <AppView key={index} style={{ transform: `translateX(calc(${-currentIndex} * 100%))` }}>
                 {icons.map((Icon) => {
                     return <GridCell key={Icon.name}>
-                        <AppIcon name={Icon.name} onClose={onClose} {...longPressBind()} edit={isEdit} >
+                        <AppIcon handleDrop={handleDrop} name={Icon.name} onClose={onClose} {...longPressBind()} edit={isEdit} >
                             <Icon />
                         </AppIcon>
                     </GridCell>
@@ -49,7 +76,7 @@ const AppContainer: FC = () => {
             </AppView>
         })}
         <button onClick={() => setEdit(false)} className={styles.complete}>完成</button>
-    </main></DndProvider >
+    </main>
 }
 
 
@@ -62,11 +89,10 @@ const useLongPress = (func: () => void) => {
             movement: [x, y],
             swipe: [sx, sy]
         }) => {
-            console.log({ first });
-            if (first && dx + dy < 3) func();
+            if (first && dx + dy < 1) func();
 
         },
-        { delay: 2000 }
+        { delay: 1000 }
     );
     return bind;
 }
