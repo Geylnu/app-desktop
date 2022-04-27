@@ -1,0 +1,15 @@
+.main {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    justify-items: stretch;
+    align-items: stretch;
+    flex: 0 0 100%;
+    touch-action: none;
+    transition: transform 0.3s ease-in-out ;
+}
+
+@media screen and (max-width: 1000px) {
+    .main {
+        grid-template-columns: repeat(5, 1fr);
+    }
+}

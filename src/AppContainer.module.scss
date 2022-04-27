@@ -1,0 +1,14 @@
+.main {
+    display: flex;
+    overflow: hidden;
+    width: 100%;
+    align-items: flex-start;
+    touch-action: none;
+    position: relative;
+}
+
+.complete {
+    position: absolute;
+    bottom: 10px;
+    right: 10px;
+}
