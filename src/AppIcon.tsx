@@ -35,7 +35,7 @@ const AppIcon: FC<Props> = ({ children, edit, onClose, name, handleDrop, ...othe
 
 
 
-    return <div draggable="true" onDragStart={onDragStart} onDrop={onDrop} onDragEnter={onDragEnter} onDragOver={ondragover} className={`${styles.icon} ${edit ? styles.animation : ''}`} {...others}>
+    return <div draggable={edit ? "true" : "false"} onDragStart={onDragStart} onDrop={onDrop} onDragEnter={onDragEnter} onDragOver={ondragover} className={`${styles.icon} ${edit ? styles.animation : ''}`} {...others}>
         {children}
         {edit ? <RiCloseCircleFill onClick={() => onClose && onClose(name)} className={styles.close} /> : null}
     </div>
